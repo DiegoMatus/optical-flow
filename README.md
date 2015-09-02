@@ -6,8 +6,8 @@ Ejecución
 ./opticalFlow nombreImagen1.jpg nombreImagen2.jpg MODE
 
 MODE =
-      -GRAY -> Escala de grises
-      -RGB -> Promedio de los valores
-      -R -> Canal Red
-      -G -> Canal Green
-      -B -> Canal Blue
+      GRAY -> Escala de grises
+      RGB -> Promedio de los valores
+      R -> Canal Red
+      G -> Canal Green
+      B -> Canal Blue
