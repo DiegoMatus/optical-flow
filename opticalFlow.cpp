@@ -58,6 +58,28 @@ int main( int, char** argv ){
   return(0);
 }
 
+Mat drawVectors(vector<Point2f> corners, vector<Point2f> nextPts, vector<uchar> status, vector<float> err){
+  Mat image = src2.clone();
+  for( int i=0; i<corners.size(); i++){
+    if(status[i]==0 || err[i]>550){
+      printf("Error is %f\n", err[i]);
+      continue;
+    }
+    if (cornerMotion(corners[i], nextPts[i])){
+      CvPoint p0 = cvPoint(
+        cvRound( corners[i].x ),
+        cvRound( corners[i].y )
+      );
+      CvPoint p1 = cvPoint(
+        cvRound( nextPts[i].x),
+        cvRound( nextPts[i].y)
+      );
+      arrowedLine( image, p0, p1, Scalar(100, 200, 150), 2, 8, 0, 0.2);
+    }
+  }
+  return image;
+}
+
 /**
  * @function opticalFlow.cpp
  * @brief Apply Shi-Tomasi corner detector
@@ -79,7 +101,6 @@ void opticalFlow( int, void* ){
     /// Copy the source image
   Mat copy, copy2;
   copy = src.clone();
-  copy2 = src2.clone();
 
   /// Apply corner detection
   goodFeaturesToTrack( src_gray1,
@@ -122,24 +143,7 @@ void opticalFlow( int, void* ){
 
   //Now make some image of what we are looking at:
   writeCorners(corners, nextPts);
-
-  for( int i=0; i<corners.size(); i++){
-    if(status[i]==0 || err[i]>550){
-      printf("Error is %f\n", err[i]);
-      continue;
-    }
-    if (cornerMotion(corners[i], nextPts[i])){
-      CvPoint p0 = cvPoint(
-        cvRound( corners[i].x ),
-        cvRound( corners[i].y )
-      );
-      CvPoint p1 = cvPoint(
-        cvRound( nextPts[i].x),
-        cvRound( nextPts[i].y)
-      );
-      arrowedLine( copy2, p0, p1, Scalar(100, 200, 150), 2, 8, 0, 0.2);
-    }
-  }
+  copy2 = drawVectors(corners, nextPts, status, err);
 
   /// Draw corners detected
   cout<<"** Number of corners detected: "<<corners.size()<<endl;

@@ -12,6 +12,7 @@ using namespace cv;
 //Headers
 bool cornerMotion(Point2f, Point2f);
 void writeCorners(vector<Point2f>, vector<Point2f>);
+void canalX(Size, char*, Mat*, Mat*, Mat*, Mat*);
 
 /*-------------------help functions------------------*/
 
@@ -43,6 +44,29 @@ void writeCorners(vector<Point2f> corners, vector<Point2f> nextPts){
 
   fclose(file);
 }
+
+/*Return an image (Mat) with the optical flow's stimate vectors.
+Mat drawVectors(vector<Point2f> corners, vector<Point2f> nextPts, vector<uchar> status, vector<float> err){
+  Mat image = src2.clone();
+  for( int i=0; i<corners.size(); i++){
+    if(status[i]==0 || err[i]>550){
+      printf("Error is %f\n", err[i]);
+      continue;
+    }
+    if (cornerMotion(corners[i], nextPts[i])){
+      CvPoint p0 = cvPoint(
+        cvRound( corners[i].x ),
+        cvRound( corners[i].y )
+      );
+      CvPoint p1 = cvPoint(
+        cvRound( nextPts[i].x),
+        cvRound( nextPts[i].y)
+      );
+      arrowedLine( image, p0, p1, Scalar(100, 200, 150), 2, 8, 0, 0.2);
+    }
+  }
+  return image;
+}*/
 
 /*-----------------color functions---------------*/
 void canalX(Size tamanio, char *canal, Mat *imageA, Mat *imageB, Mat *frame1, Mat *frame2){
