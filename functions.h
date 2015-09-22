@@ -13,8 +13,55 @@ using namespace cv;
 bool cornerMotion(Point2f, Point2f);
 void writeCorners(vector<Point2f>, vector<Point2f>);
 void canalX(Size, char*, Mat*, Mat*, Mat*, Mat*);
+Mat getChannel(Mat, int);
 
 /*-------------------help functions------------------*/
+
+Mat getChannel(Mat image, char *channel){
+  int average;
+  Mat hsv, output;
+  vector<Mat> channels(3);
+
+  if (strcmp(channel, "H") == 0 || strcmp(channel, "S") == 0 || strcmp(channel, "V") == 0){
+    cvtColor( image, hsv, COLOR_BGR2HSV);
+    image = hsv.clone();
+  }
+
+  split(image, channels);
+
+  //GRAY section
+  if(strcmp(channel, "GRAY") == 0){
+    cvtColor( image, output, COLOR_BGR2GRAY );
+    return output;
+  }
+
+  //RGB section
+  if(strcmp(channel, "R") == 0 || strcmp(channel, "V") == 0)
+    return channels[2];
+  if(strcmp(channel, "G") == 0)
+    return channels[1];
+  if(strcmp(channel, "B") == 0)
+    return channels[0];
+  /*if(strcmp(channel, "RGB") == 0){
+    merge(channels[0], channels[1], channels[2], 3, output);
+    return output;
+  }*/
+
+  //HSV section
+  if(strcmp(channel, "H") == 0){
+    return channels[0];
+  }
+  if(strcmp(channel, "S") == 0){
+    return channels[1];
+  }
+  if(strcmp(channel, "V") == 0){
+    return channels[2];
+  }
+  /*if(strcmp(channel, "HSV") == 0){
+    cvtColor( hsv, output, COLOR_HSV2GRAY);
+    return output;
+  }*/
+}
 
 //Function for estimate the euclidean distance beetwen both points.
 bool cornerMotion(Point2f p1, Point2f p2){
@@ -44,29 +91,6 @@ void writeCorners(vector<Point2f> corners, vector<Point2f> nextPts){
 
   fclose(file);
 }
-
-/*Return an image (Mat) with the optical flow's stimate vectors.
-Mat drawVectors(vector<Point2f> corners, vector<Point2f> nextPts, vector<uchar> status, vector<float> err){
-  Mat image = src2.clone();
-  for( int i=0; i<corners.size(); i++){
-    if(status[i]==0 || err[i]>550){
-      printf("Error is %f\n", err[i]);
-      continue;
-    }
-    if (cornerMotion(corners[i], nextPts[i])){
-      CvPoint p0 = cvPoint(
-        cvRound( corners[i].x ),
-        cvRound( corners[i].y )
-      );
-      CvPoint p1 = cvPoint(
-        cvRound( nextPts[i].x),
-        cvRound( nextPts[i].y)
-      );
-      arrowedLine( image, p0, p1, Scalar(100, 200, 150), 2, 8, 0, 0.2);
-    }
-  }
-  return image;
-}*/
 
 /*-----------------color functions---------------*/
 void canalX(Size tamanio, char *canal, Mat *imageA, Mat *imageB, Mat *frame1, Mat *frame2){
@@ -106,6 +130,30 @@ void canalX(Size tamanio, char *canal, Mat *imageA, Mat *imageB, Mat *frame1, Ma
       }
   }
 }
+
+/*Return an image (Mat) with the optical flow's stimate vectors.
+Mat drawVectors(vector<Point2f> corners, vector<Point2f> nextPts, vector<uchar> status, vector<float> err){
+  Mat image = src2.clone();
+  for( int i=0; i<corners.size(); i++){
+    if(status[i]==0 || err[i]>550){
+      printf("Error is %f\n", err[i]);
+      continue;
+    }
+    if (cornerMotion(corners[i], nextPts[i])){
+      CvPoint p0 = cvPoint(
+        cvRound( corners[i].x ),
+        cvRound( corners[i].y )
+      );
+      CvPoint p1 = cvPoint(
+        cvRound( nextPts[i].x),
+        cvRound( nextPts[i].y)
+      );
+      arrowedLine( image, p0, p1, Scalar(100, 200, 150), 2, 8, 0, 0.2);
+    }
+  }
+  return image;
+}*/
+
 /*void averageRGB(Size tamanio){
   int average;
   for (int i = 0; i < tamanio.height; i++){

@@ -1,7 +1,7 @@
 /**
- * @function goodFeaturesToTrack_Demo.cpp
- * @brief Demo code for detecting corners using Shi-Tomasi method
- * @author OpenCV team
+ * @Optical flow
+ * @brief algoritmh for detecting corners and optical flow using Shi-Tomasi and Lucas-Kanade methods
+ * @author Matus Perdomo Diego
  */
 
 #include "opencv2/imgcodecs.hpp"
@@ -37,13 +37,14 @@ int main( int, char** argv ){
   /// Load source image and convert it to gray
   src = imread( argv[1], 1 );
   src2 = imread( argv[2], 1 );
-  Size tamanio = src.size();
+  //Size tamanio = src.size();
 
-  cvtColor( src, src_gray1, COLOR_BGR2GRAY );
-  cvtColor( src2, src_gray2, COLOR_BGR2GRAY );
+  //cvtColor( src, src_gray1, COLOR_BGR2GRAY );
 
-  //canalX(tamanio, argv[3]);
-  canalX(tamanio, argv[3], &src, &src2, &src_gray1, &src_gray2);
+  //canalX(tamanio, argv[3], &src, &src2, &src_gray1, &src_gray2);
+  src_gray1 = getChannel(src, argv[3]);
+  src_gray2 = getChannel(src2, argv[3]);
+
   /// Create Window
   namedWindow( source_window, WINDOW_AUTOSIZE );
 
