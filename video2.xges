@@ -1,0 +1,27 @@
+<ges version='0.1'>
+  <project properties='properties;' metadatas='metadatas, name=(string)&quot;Proyecto\ nuevo&quot;, author=(string)Diego, render-scale=(double)100;'>
+    <encoding-profiles>
+      <encoding-profile name='pitivi-profile' description='Perfil de codificación de Pitivi' type='container' preset-name='oggmux' format='application/ogg' >
+        <stream-profile parent='pitivi-profile' id='0' type='video' presence='0' format='video/x-theora, framerate=(fraction)[ 1/2147483647, 2147483647/1 ], width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ]' preset-name='theoraenc' restriction='video/x-raw, width=(int)720, height=(int)576, framerate=(fraction)25/1, pixel-aspect-ratio=(fraction)1/1' pass='0' variableframerate='0' />
+        <stream-profile parent='pitivi-profile' id='1' type='audio' presence='0' format='audio/x-vorbis, rate=(int)[ 1, 200000 ], channels=(int)[ 1, 255 ]' preset-name='vorbisenc' restriction='audio/x-raw, channels=(int)2, rate=(int)44100' />
+      </encoding-profile>
+    </encoding-profiles>
+    <ressources>
+      <asset id='GESTitleClip' extractable-type-name='GESTitleClip' properties='properties;' metadatas='metadatas;' />
+      <asset id='file:///home/diego/Documentos/octavo/experienciaRecepcional/tesis/Jap974%20-%20Run%20Ghost%20Car%2021%20Novembre%202010%20CFG-tCq_OWpmUZw.mp4' extractable-type-name='GESUriClip' properties='properties, supported-formats=(int)6, duration=(guint64)319715000000;' metadatas='metadatas, datetime=(datetime)2014-01-17T15:09:25Z, private-qt-tag=(sample)00000019677373740000001164617461000000010000000030:None:R3N0U2VnbWVudCwgZmxhZ3M9KEdzdFNlZ21lbnRGbGFncylHU1RfU0VHTUVOVF9GTEFHX05PTkUsIHJhdGU9KGRvdWJsZSkxLCBhcHBsaWVkLXJhdGU9KGRvdWJsZSkxLCBmb3JtYXQ9KEdzdEZvcm1hdClHU1RfRk9STUFUX1RJTUUsIGJhc2U9KGd1aW50NjQpMCwgb2Zmc2V0PShndWludDY0KTAsIHN0YXJ0PShndWludDY0KTAsIHN0b3A9KGd1aW50NjQpMTg0NDY3NDQwNzM3MDk1NTE2MTUsIHRpbWU9KGd1aW50NjQpMCwgcG9zaXRpb249KGd1aW50NjQpMCwgZHVyYXRpb249KGd1aW50NjQpMTg0NDY3NDQwNzM3MDk1NTE2MTU7AA__:YXBwbGljYXRpb24veC1nc3QtcXQtZ3NzdC10YWcsIHN0eWxlPShzdHJpbmcpaXR1bmVzOwA_, container-format=(string)&quot;ISO\ MP4/M4A&quot;, audio-codec=(string)&quot;MPEG-4\ AAC\ audio&quot;, maximum-bitrate=(uint)202064, bitrate=(uint)192000, video-codec=(string)&quot;H.264\ /\ AVC&quot;;' />
+    </ressources>
+    <timeline properties='properties, auto-transition=(boolean)true, snapping-distance=(guint64)1670389407;' metadatas='metadatas, duration=(guint64)324715000000;'>
+      <track caps='video/x-raw' track-type='4' track-id='0' properties='properties, async-handling=(boolean)false, message-forward=(boolean)false, caps=(string)video/x-raw, restriction-caps=(string)&quot;video/x-raw\,\ width\=\(int\)720\,\ height\=\(int\)576\,\ framerate\=\(fraction\)25/1&quot;;' metadatas='metadatas;'/>
+      <track caps='audio/x-raw' track-type='2' track-id='1' properties='properties, async-handling=(boolean)false, message-forward=(boolean)false, caps=(string)audio/x-raw, restriction-caps=(string)&quot;NULL&quot;;' metadatas='metadatas;'/>
+      <layer priority='0' properties='properties, auto-transition=(boolean)true;' metadatas='metadatas, volume=(float)1;'>
+        <clip id='0' asset-id='file:///home/diego/Documentos/octavo/experienciaRecepcional/tesis/Jap974%20-%20Run%20Ghost%20Car%2021%20Novembre%202010%20CFG-tCq_OWpmUZw.mp4' type-name='GESUriClip' layer-priority='0' track-types='6' start='0' duration='319715000000' inpoint='0' rate='0' properties='properties, mute=(boolean)false, is-image=(boolean)false;' >
+            <binding type='direct' source_type='interpolation' property='volume' mode='1' track_id='1' values =' 0:0.10000000000000001  319715000000:0.10000000000000001 '/>
+            <binding type='direct' source_type='interpolation' property='alpha' mode='1' track_id='0' values =' 0:1  319715000000:1 '/>
+        </clip>
+        <clip id='1' asset-id='GESTitleClip' type-name='GESTitleClip' layer-priority='0' track-types='6' start='319715000000' duration='5000000000' inpoint='0' rate='0' properties='properties, text=(string)&quot;&quot;, font-desc=(string)&quot;Serif\ 36&quot;, halignment=(int)1, valignment=(int)0, color=(uint)4294967295, background=(uint)4294967295, xpos=(double)0.5, ypos=(double)0.5;' >
+            <binding type='direct' source_type='interpolation' property='alpha' mode='1' track_id='0' values =' 0:1  5000000000:1 '/>
+        </clip>
+      </layer>
+    </timeline>
+</project>
+</ges>
