@@ -163,8 +163,12 @@ Vector getWindow(Size window_size, Point2f begin, float radio){
   return window;
 }
 
-bool inRange(){
-  bool in_range;
+bool inRange(float value, float begin_range, float end_range){
+  bool in_range = false;
+  if (value > begin_range && value < end_range)
+  {
+    in_range = true;
+  }
   return in_range;
 }
 
