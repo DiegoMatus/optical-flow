@@ -16,7 +16,7 @@ using namespace std;
 
 /// Global variables
 Mat src, src2, src_gray1, src_gray2;
-
+vector<Vector> good_vectors;  //Result vectors of OpticalFlow method
 
 int maxCorners = 350;
 int maxTrackbar = 500;
@@ -27,72 +27,62 @@ const char* source_windowR = "Results";
 
 /// Function header
 void opticalFlow( int, void* );
-//void canalX(Size, char *, Mat *, Mat *, Mat *, Mat *);
 
 /**
  * @function main
  */
 int main( int, char** argv ){
-  int op = atoi(argv[3]);
   /// Load source image and convert it to gray
   src = imread( argv[1], 1 );
   src2 = imread( argv[2], 1 );
-  Size tamanio = src.size();
 
-  src_gray1 = getChannel(src, argv[3]);
-  src_gray2 = getChannel(src2, argv[3]);
-//  cvtColor( src, src_gray1, COLOR_BGR2GRAY);
-//  cvtColor( src2, src_gray2, COLOR_BGR2GRAY);
-//  cvtColor( src, hsv1, COLOR_BGR2HSV);
-//  cvtColor( src2, hsv2, COLOR_BGR2HSV);
-//  src = hsv1.clone();
-//  src2 = hsv2.clone();
+  if (strcmp(argv[3], "VB") == 0)
+  {
+    char arg[3] = "B";
+    Mat result_image = src2.clone();
+    vector<Vector> result_vectors;
+    vector<Vector> other_vectors;
+    vector<Vector> outliers_vectors;
 
-//  canalX(tamanio, argv[2], &src, &src2, &src_gray1, &src_gray2);
-  /// Create Window
-  namedWindow( source_window, WINDOW_AUTOSIZE );
+    src_gray1 = getChannel(src, arg);
+    src_gray2 = getChannel(src2, arg);
+    opticalFlow(0, 0);
+    result_vectors = good_vectors;
+    
+    strcpy(arg,"V");
+    src_gray1 = getChannel(src, arg);
+    src_gray2 = getChannel(src2, arg);
+    opticalFlow(0, 0);
+    other_vectors = good_vectors;
+
+    //result_vectors.insert( result_vectors.end(), other_vectors.begin(), other_vectors.end() );
+    //good_vectors = getGoodVectors(result_vectors, src2.size());
+    //outliers_vectors = getOutliersVectors(result_vectors, src2.size());
+    //char filename[24] = "Good vectors";
+    //writeCorners(good_vectors, filename);
+    //strcpy(filename,"Outliers vectors");
+    //writeCorners(outliers_vectors, filename);
+    result_image = drawVectors(result_vectors, result_image, Scalar(255, 0, 0));
+    result_image = drawVectors(other_vectors, result_image, Scalar(0, 255, 255));
+    namedWindow(source_windowR, WINDOW_AUTOSIZE);
+    imshow(source_windowR, result_image);
+    waitKey(0);
+
+  }else{
+    src_gray1 = getChannel(src, argv[3]);
+    src_gray2 = getChannel(src2, argv[3]);
+  }
+  
+  opticalFlow( 0, 0 );
 
   /// Create Trackbar to set the number of corners
   createTrackbar( "Max  corners:", source_window, &maxCorners, maxTrackbar, opticalFlow );
-
-  imshow( source_window, src );
-
-  opticalFlow( 0, 0 );
 
   waitKey(0);
   return(0);
 }
 
-Mat drawVectors(vector<Vector> good_vectors){
-  bool is_outlier;
-  Mat image = src2.clone();
-  Vector max_vector = getMaxVector(good_vectors);
-  float WINDOW = 50, ERROR_ANGLE = 5, ERROR_MAGNITUDE = 8;
 
-  //is_outlier = isOutlier(image.size(), good_vectors, getMaxVector(good_vectors), 25, 10);
-  for( int i=0; i<good_vectors.size(); i++){
-      CvPoint p0 = cvPoint(
-        cvRound( good_vectors[i].p1.x ),
-        cvRound( good_vectors[i].p1.y )
-      );
-      CvPoint p1 = cvPoint(
-        cvRound( good_vectors[i].p2.x),
-        cvRound( good_vectors[i].p2.y)
-      );
-      if (good_vectors[i].p1 == max_vector.p1){
-        //printf("Vector mayor: [%f,%f] - [%f,%f] Magnitud: %f\n", max_vector.p1.x, max_vector.p1.y, max_vector.p2.x, max_vector.p2.y, euclideanDistance(max_vector));
-        arrowedLine( image, p0, p1, Scalar(255, 0, 0), 2, 8, 0, 0.2);        
-      }
-
-        if(isOutlier(src.size(), good_vectors, good_vectors[i], WINDOW, ERROR_ANGLE, ERROR_MAGNITUDE)){
-          arrowedLine( image, p0, p1, Scalar(0, 0, 255), 2, 8, 0, 0.2);
-        }else{
-          arrowedLine( image, p0, p1, Scalar(0, 255, 255), 2, 8, 0, 0.2);
-        }
-      
-  }
-  return image;
-}
 
 /**
  * @function opticalFlow.cpp
@@ -111,6 +101,10 @@ void opticalFlow( int, void* ){
   int blockSize = 3;
   bool useHarrisDetector = 0;
   double k = 0.04;
+
+  /// Vectors
+  vector<Vector> filter_vectors;
+  vector<Vector> outliers_vectors;
 
     /// Copy the source image
   Mat copy, copy2;
@@ -157,9 +151,17 @@ void opticalFlow( int, void* ){
 
   //Now make some image of what we are looking at:
   cout<<"** Number of corners detected: "<<corners.size()<<endl;
-  vector<Vector> good_vectors = getGoodVectors(corners, nextPts, status, err);
-  writeCorners(good_vectors);
-  copy2 = drawVectors(good_vectors);
+  filter_vectors = getFilterVectors(corners, nextPts, status, err);
+  good_vectors = getGoodVectors(filter_vectors, src.size());
+  outliers_vectors = getOutliersVectors(filter_vectors, src.size());
+
+  char filename[24] = "Good vectors";
+  writeCorners(good_vectors, filename);
+  strcpy(filename,"Outliers vectors");
+  writeCorners(outliers_vectors, filename);
+
+  copy2 = drawVectors(good_vectors, src2, Scalar(0, 255, 255));
+  copy2 = drawVectors(outliers_vectors, copy2, Scalar(0, 0, 255));
 
   /// Draw corners detected
   int r = 2;

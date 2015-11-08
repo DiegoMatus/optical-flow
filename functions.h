@@ -17,11 +17,13 @@ struct Vector {
 //Headers
 Mat getChannel(Mat, int);
 float euclideanDistance(Vector);
-void writeCorners(vector<Point2f>, vector<Point2f>);
-vector<Vector> getGoodVectors(vector<Point2f>, vector<Point2f>, vector<uchar>, vector<float>);
-//Mat average(vector<Mat>);
-//void putMat(Size, char, Mat*);
+float getAngle(Vector);
+void writeCorners(vector<Vector>, char[]);
+vector<Vector> getFilterVectors(vector<Point2f>, vector<Point2f>, vector<uchar>, vector<float>);
 bool isOutlier(Size, vector<Vector>, Vector, float, float, float);
+vector<Vector> getOutliersVectors(vector<Vector>, Size);
+vector<Vector> getGoodVectors(vector<Vector>, Size);
+Mat drawVectors(vector<Vector>, Mat, Scalar);
 //void canalX(Size, char*, Mat*, Mat*, Mat*, Mat*);
 
 /*-------------------help functions------------------*/
@@ -29,13 +31,22 @@ Mat getChannel(Mat image, char *channel){
   int average;
   Mat hsv, output;
   vector<Mat> channels(3);
+  vector<Mat> channels_RGB(3);
+  vector<Mat> channels_BV;
 
-  if (strcmp(channel, "H") == 0 || strcmp(channel, "S") == 0 || strcmp(channel, "V") == 0){
+  output = image.clone();
+
+  if (strcmp(channel, "H") == 0 || strcmp(channel, "S") == 0 || strcmp(channel, "V") == 0 || strcmp(channel, "HSV") == 0 || strcmp(channel, "BV") == 0){
     cvtColor( image, hsv, COLOR_BGR2HSV);
-    image = hsv.clone();
+    if(strcmp(channel, "HSV") == 0){
+        cvtColor(hsv, output, COLOR_BGR2GRAY);
+        return output;
+    }
+    output = hsv.clone();
+    split(image, channels_RGB);
   }
 
-  split(image, channels);
+  split(output, channels);
 
   //GRAY section
   if(strcmp(channel, "GRAY") == 0){
@@ -50,25 +61,17 @@ Mat getChannel(Mat image, char *channel){
     return channels[1];
   if(strcmp(channel, "B") == 0 || strcmp(channel, "H") == 0)
     return channels[0];
-  if(strcmp(channel, "RGB") == 0 || strcmp(channel, "HSV") == 0){
-    return output;
+
+  if (strcmp(channel, "BV") == 0){
+      Mat empty = Mat::zeros(Size(output.cols, output.rows), CV_8UC1);
+      channels_BV.push_back(empty);
+      channels_BV.push_back(channels[2]); //Push channel V
+      channels_BV.push_back(channels_RGB[0]); //Push channel B
+      merge(channels_BV, output);
+      cvtColor(output, output, COLOR_BGR2GRAY);
+      return output;
   }
 }
-
-//Function for estimate average from three (n) channels
-/*Mat average(vector<Mat> channels){
-      for (int i = 0; i < image.size().height; ++i)
-    {
-      for (int j = 0; j < image.size().width; ++j)
-      {
-        Vec3b hsv2=image.at<Vec3b>(i,j);
-        if ( hsv2.val[0] = 150)
-            hsv2.val[0] = 200;
-        printf("[%d]", hsv2.val[0]);
-      }
-        printf("\n");
-  return channels[0]; 
-}*/
 
 //Function for estimate the euclidean distance beetwen both points.
 float euclideanDistance(Vector v){
@@ -85,7 +88,7 @@ float getAngle(Vector v){
   return angle;
 }
 
-vector<Vector> getGoodVectors(vector<Point2f> corners, vector<Point2f> nextPts, vector<uchar> status, vector<float> err){
+vector<Vector> getFilterVectors(vector<Point2f> corners, vector<Point2f> nextPts, vector<uchar> status, vector<float> err){
   vector<Vector> vectors;
   Vector v;
   int position = 0;
@@ -98,7 +101,7 @@ vector<Vector> getGoodVectors(vector<Point2f> corners, vector<Point2f> nextPts, 
     v.p1 = corners[i];
     v.p2 = nextPts[i];
 
-    if(euclideanDistance(v) > 2){ //Desplazamiento mayor a 1px.
+    if(euclideanDistance(v) > 1){ //Desplazamiento mayor a 1px.
       vectors.push_back(v);
       position++;
     }
@@ -125,12 +128,12 @@ Vector getMaxVector(vector<Vector> vectors){
 }
 
 //Function that write the coordenates in txt file
-void writeCorners(vector<Vector> vectors){
+void writeCorners(vector<Vector> vectors, char filename[]){
   FILE *file;
   char vector[75];
   float magnitude, angle;
 
-  if(!(file=fopen("coordenadas.csv", "w+"))){
+  if(!(file=fopen(strcat(filename,".csv"), "w+"))){
     exit(0);
   }
 
@@ -252,6 +255,49 @@ bool isOutlier(Size window_size, vector<Vector> vectors, Vector v, float radio, 
   }
 
   return outlier;
+}
+
+vector<Vector> getOutliersVectors(vector<Vector> good_vectors, Size size){
+  vector<Vector> outliers;
+  float WINDOW = 50, ERROR_ANGLE = 5, ERROR_MAGNITUDE = 8;
+
+  for( int i=0; i<good_vectors.size(); i++){
+        if(isOutlier(size, good_vectors, good_vectors[i], WINDOW, ERROR_ANGLE, ERROR_MAGNITUDE)){
+            outliers.push_back(good_vectors[i]);
+        }      
+  }
+  return outliers;
+}
+
+vector<Vector> getGoodVectors(vector<Vector> good_vectors, Size size){
+  vector<Vector> no_outliers;
+  float WINDOW = 50, ERROR_ANGLE = 5, ERROR_MAGNITUDE = 8;
+
+  for( int i=0; i<good_vectors.size(); i++){
+        if(!isOutlier(size, good_vectors, good_vectors[i], WINDOW, ERROR_ANGLE, ERROR_MAGNITUDE)){
+            no_outliers.push_back(good_vectors[i]);
+        }      
+  }
+  return no_outliers;
+}
+
+Mat drawVectors(vector<Vector> good_vectors, Mat src, Scalar scalar){
+  Mat image = src.clone();
+
+  for( int i=0; i<good_vectors.size(); i++){
+      CvPoint p0 = cvPoint(
+        cvRound( good_vectors[i].p1.x ),
+        cvRound( good_vectors[i].p1.y )
+      );
+      CvPoint p1 = cvPoint(
+        cvRound( good_vectors[i].p2.x),
+        cvRound( good_vectors[i].p2.y)
+      );
+      
+      arrowedLine( image, p0, p1, scalar, 2, 8, 0, 0.2);
+  }
+
+  return image;
 }
 
 //-----------------color functions---------------
