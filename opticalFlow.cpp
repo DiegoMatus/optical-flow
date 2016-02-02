@@ -36,9 +36,9 @@ int main( int, char** argv ){
   src = imread( argv[1], 1 );
   src2 = imread( argv[2], 1 );
 
-  if (strcmp(argv[3], "VB") == 0)
+  if (strcmp(argv[3], "RGB") == 0)
   {
-    char arg[3] = "B";
+    char arg[3] = "R";
     Mat result_image = src2.clone();
     vector<Vector> result_vectors;
     vector<Vector> other_vectors;
@@ -49,11 +49,17 @@ int main( int, char** argv ){
     opticalFlow(0, 0);
     result_vectors = good_vectors;
     
-    strcpy(arg,"V");
+    strcpy(arg,"G");
     src_gray1 = getChannel(src, arg);
     src_gray2 = getChannel(src2, arg);
     opticalFlow(0, 0);
     other_vectors = good_vectors;
+
+    strcpy(arg,"B");
+    src_gray1 = getChannel(src, arg);
+    src_gray2 = getChannel(src2, arg);
+    opticalFlow(0, 0);
+    outliers_vectors = good_vectors;
 
     //result_vectors.insert( result_vectors.end(), other_vectors.begin(), other_vectors.end() );
     //good_vectors = getGoodVectors(result_vectors, src2.size());
@@ -62,12 +68,13 @@ int main( int, char** argv ){
     //writeCorners(good_vectors, filename);
     //strcpy(filename,"Outliers vectors");
     //writeCorners(outliers_vectors, filename);
-    result_image = drawVectors(result_vectors, result_image, Scalar(255, 0, 0));
-    result_image = drawVectors(other_vectors, result_image, Scalar(0, 255, 255));
+    result_image = drawVectors(result_vectors, result_image, Scalar(0, 0, 255));
+    result_image = drawVectors(other_vectors, result_image, Scalar(0, 255, 0));
+    result_image = drawVectors(outliers_vectors, result_image, Scalar(255, 0, 0));
     namedWindow(source_windowR, WINDOW_AUTOSIZE);
     imshow(source_windowR, result_image);
     waitKey(0);
-
+    exit(0);
   }else{
     src_gray1 = getChannel(src, argv[3]);
     src_gray2 = getChannel(src2, argv[3]);
@@ -160,18 +167,23 @@ void opticalFlow( int, void* ){
   strcpy(filename,"Outliers vectors");
   writeCorners(outliers_vectors, filename);
 
+  //Uncomment for save vectorial field image.
+  //src2 = Scalar(245,245,245);
   copy2 = drawVectors(good_vectors, src2, Scalar(0, 255, 255));
-  copy2 = drawVectors(outliers_vectors, copy2, Scalar(0, 0, 255));
+  copy2 = drawVectors(outliers_vectors, copy2, Scalar(0, 255, 255));
 
   /// Draw corners detected
   int r = 2;
   for( size_t i = 0; i < corners.size(); i++ )
-     { circle( copy, corners[i], r, Scalar(255, 170, 155), -1, 8, 0 ); }
+     { circle( copy, corners[i], r, Scalar(0, 255, 0), -1, 8, 0 ); }
 
+  
   namedWindow(source_window, WINDOW_AUTOSIZE);
   namedWindow(source_windowB, WINDOW_AUTOSIZE);
   namedWindow(source_windowR, WINDOW_AUTOSIZE);
-  imshow(source_window,copy);
+
+  imshow(source_window,  copy);
   imshow(source_windowB, src_gray2);
   imshow(source_windowR, copy2);
+  printf("%s%d\n", "Vectores buenos: ", (int)good_vectors.size());
 }
